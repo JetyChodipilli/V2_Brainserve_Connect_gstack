@@ -2,9 +2,9 @@ spring:
   application:
     name: brainserve-appointment
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/brainserve}
-    username: ${SPRING_DATASOURCE_USERNAME:brainserve_app}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
+    url: jdbc:postgresql://localhost:5432/brainserve_clean
+    username: brainserve_app
+    password: postgres
   jpa:
     open-in-view: false
     hibernate:
@@ -17,38 +17,39 @@ spring:
     enabled: true
   data:
     redis:
-      host: ${SPRING_DATA_REDIS_HOST:localhost}
-      port: ${SPRING_DATA_REDIS_PORT:6379}
+      host: localhost
+      port: 6379
       timeout: 2s
   mvc:
     problemdetails:
       enabled: true
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  web:
+    error:
+      include-message: never
+      include-stacktrace: never
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: 8080
   shutdown: graceful
-  error:
-    include-message: never
-    include-stacktrace: never
 
 brainserve:
   security:
-    jwt-secret: ${BS_JWT_SECRET:}
+    jwt-secret: Q9z7hX2kLw8rT1vYc3pN5aJ0mE4sU6dR2fG8bH9qW1zK7xL0vP3tC5nM8yR4jV2
     access-token-ttl: 10m
     refresh-token-ttl: 14d
-    allowed-origins: ${BS_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+    allowed-origins: http://localhost:5173
     max-login-failures: 5
     lock-duration: 15m
-    secure-cookies: ${BS_SECURE_COOKIES:false}
+    secure-cookies: true
   development:
-    reveal-otp: ${BS_REVEAL_OTP:false}
+    reveal-otp: true
   bootstrap:
-    ceo-email: ${BS_BOOTSTRAP_CEO_EMAIL:}
-    ceo-password: ${BS_BOOTSTRAP_CEO_PASSWORD:}
-    admin-email: ${BS_BOOTSTRAP_ADMIN_EMAIL:}
-    admin-password: ${BS_BOOTSTRAP_ADMIN_PASSWORD:}
+    ceo-email: jety@brainserve.in
+    ceo-password: Jety@BS#id06
+    admin-email: jetychodipilli@gmail.com
+    admin-password: SystemAdmin@BS#06
 
 management:
   endpoints:

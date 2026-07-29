@@ -13,6 +13,8 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class EmployeeService {
     private static final String TEMPORARY_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
+    private static final Set<String> ADMIN_CREATABLE_ROLES = Set.of(
+            "ROLE_EMPLOYEE",
+            "ROLE_SECURITY",
+            "ROLE_RECEPTIONIST");
     private final EmployeeRepository employees;
     private final OrganizationService organization;
     private final IdentityDirectory identity;
@@ -48,6 +54,23 @@ public class EmployeeService {
 
     @Transactional
     public CreatedEmployee create(CreateEmployee command) {
+        CreatedAccount account = createWithRole(command, "ROLE_EMPLOYEE");
+        return new CreatedEmployee(account.employee(), account.temporaryPassword());
+    }
+
+    @Transactional
+    public CreatedAccount createAccount(CreateEmployee command, String requestedRole) {
+        String role = requestedRole == null ? "" : requestedRole.trim().toUpperCase(Locale.ROOT);
+        if (!ADMIN_CREATABLE_ROLES.contains(role)) {
+            throw new DomainException(
+                    "ACCOUNT_ROLE_INVALID",
+                    HttpStatus.BAD_REQUEST,
+                    "Only Employee, Security, or Receptionist accounts can be created here.");
+        }
+        return createWithRole(command, role);
+    }
+
+    private CreatedAccount createWithRole(CreateEmployee command, String role) {
         if (employees.existsByOfficialEmailIgnoreCase(command.officialEmail())
                 || identity.loginExists(command.officialEmail())) {
             throw new DomainException("EMPLOYEE_EMAIL_EXISTS", HttpStatus.CONFLICT, "Official email already exists.");
@@ -71,15 +94,18 @@ public class EmployeeService {
                 command.joiningDate(),
                 command.workLocation()));
         String temporaryPassword = temporaryPassword();
-        identity.provisionEmployee(
+        identity.provisionPrivilegedEmployee(
                 employee.getId(),
                 employee.getOfficialEmail(),
                 employee.getDisplayName(),
-                temporaryPassword);
-        audit.record(currentUser.id(), "CREATE", "EMPLOYEE", employee.getId(), null, "CONFIDENTIAL");
+                temporaryPassword,
+                role);
+        audit.record(currentUser.id(), "CREATE_ACCOUNT", "EMPLOYEE", employee.getId(), role, "CONFIDENTIAL");
         outbox.publish("EMPLOYEE", employee.getId(), "EmployeeCreated",
-                "{\"employeeId\":\"" + employee.getId() + "\",\"email\":\"" + employee.getOfficialEmail() + "\"}");
-        return new CreatedEmployee(toView(employee), temporaryPassword);
+                "{\"employeeId\":\"" + employee.getId()
+                        + "\",\"email\":\"" + employee.getOfficialEmail()
+                        + "\",\"role\":\"" + role + "\"}");
+        return new CreatedAccount(toView(employee), role, temporaryPassword);
     }
 
     @Transactional
@@ -263,6 +289,9 @@ public class EmployeeService {
     }
 
     public record CreatedEmployee(EmployeeView employee, String temporaryPassword) {
+    }
+
+    public record CreatedAccount(EmployeeView employee, String role, String temporaryPassword) {
     }
 
     public record DirectoryEmployee(

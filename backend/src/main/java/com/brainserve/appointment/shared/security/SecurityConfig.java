@@ -24,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Configuration
 public class SecurityConfig {
@@ -32,6 +33,7 @@ public class SecurityConfig {
     SecurityFilterChain apiSecurity(
             HttpSecurity http,
             JwtAuthenticationConverter authenticationConverter,
+            @Qualifier("corsConfigurationSource")
             CorsConfigurationSource corsSource,
             SecurityProblemHandler problemHandler,
             ForcedPasswordChangeFilter passwordChangeFilter,

@@ -34,8 +34,11 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AppointmentStatus status;
+    @Column(length = 64)
     private String verificationHash;
+    @Column(length = 64)
     private String qrTokenHash;
+
     private UUID decisionBy;
     private Instant decisionAt;
     private String decisionRemarks;

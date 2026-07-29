@@ -1,11 +1,11 @@
 export type Role =
-  | "ROLE_CEO"
-  | "ROLE_HR_ADMIN"
-  | "ROLE_HR_EXECUTIVE"
-  | "ROLE_EMPLOYEE"
-  | "ROLE_RECEPTIONIST"
-  | "ROLE_SECURITY"
-  | "ROLE_SYSTEM_ADMIN";
+    | "ROLE_CEO"
+    | "ROLE_HR_ADMIN"
+    | "ROLE_HR_EXECUTIVE"
+    | "ROLE_EMPLOYEE"
+    | "ROLE_RECEPTIONIST"
+    | "ROLE_SECURITY"
+    | "ROLE_SYSTEM_ADMIN";
 
 export interface User {
   id: string;
@@ -109,6 +109,59 @@ export interface Employee {
   status: string;
   workLocation?: string;
   version: number;
+}
+
+export interface Branch {
+  id: string;
+  code: string;
+  name: string;
+  city: string;
+  active: boolean;
+}
+
+export interface Department {
+  id: string;
+  branchId: string;
+  parentId?: string;
+  code: string;
+  name: string;
+  active: boolean;
+}
+
+export interface Designation {
+  id: string;
+  departmentId?: string;
+  name: string;
+  level: number;
+  active: boolean;
+}
+
+export type ProvisionableRole =
+    | "ROLE_EMPLOYEE"
+    | "ROLE_SECURITY"
+    | "ROLE_RECEPTIONIST";
+
+export interface CreateAccountPayload {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  officialEmail: string;
+  personalEmail?: string;
+  phone?: string;
+  departmentId: string;
+  designationId: string;
+  branchId: string;
+  managerId?: string;
+  employmentType: string;
+  joiningDate: string;
+  workLocation?: string;
+  role: ProvisionableRole;
+}
+
+export interface CreatedAccount {
+  employee: Employee;
+  role: ProvisionableRole;
+  temporaryPassword: string;
 }
 
 export interface CompensationPackage {
